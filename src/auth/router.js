@@ -11,10 +11,14 @@ router.get("/users", async (req, res) => {
   res.status(200).send({ data });
 });
 
-router.post("/signup", async (req, res) => {
-  const newUser = new UserSchema(req.body);
-  const data = await newUser.save();
-  res.status(200).send({ data });
+router.post("/signup", async (req, res, next) => {
+  try {
+    const newUser = new UserSchema(req.body);
+    const data = await newUser.save();
+    res.status(201).send({ data });
+  } catch (e) {
+    next(new Error(e.message));
+  }
 });
 
 router.post("/signin", basicAuth, async (req, res) => {

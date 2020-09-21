@@ -10,11 +10,11 @@ app.use(bodyParser.urlencoded({
   extended: false,
 }));
 
-app.all("/", (req, res) => {
-  res.status(200).send({ msg: "Hello World!" });
-});
-
 app.use("/", authRouter);
+
+app.get("/bad", (req, res) => {
+  res.status(500).send();
+});
 
 // page not found middleware
 app.all("*", (req, res) => {
