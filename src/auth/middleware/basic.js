@@ -18,5 +18,5 @@ module.exports = async (req, res, next) => {
     req.isValid = isValid;
     req.user = user;
     next();
-  } else { next('Invalid Login!! '); }
- }
+  } else { next("Invalid Login!! "); }
+};
