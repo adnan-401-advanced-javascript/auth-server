@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return  */
 const uniqueValidator = require("mongoose-unique-validator");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -28,6 +29,21 @@ schema.methods.generateToken = async function () {
   const { username } = this;
   const token = jwt.sign({ username }, process.env.JWT_SECRET_KEY);
   return token;
+};
+
+schema.statics.decodeToken = function (token) {
+  return new Promise((resolve, reject) => {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      console.log("as");
+      this.findOne({ username: decoded.username }).then((user) => {
+        if (!user) return reject(new Error("invalidToken!"));
+        resolve(user);
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 module.exports = mongoose.model("users", schema); // collection name - its schema
