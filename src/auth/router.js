@@ -26,6 +26,7 @@ router.post("/signin", basicAuth, async (req, res) => {
   if (isValid) {
     const authUser = new UserSchema({ username: user.username });
     const token = await authUser.generateToken();
+    res.cookie("token", token, { maxAge: 900000, httpOnly: true });
     res.status(200).send({ user, token });
   } else {
     res.status(401).send({ msg: "username/password is incorrect" });
