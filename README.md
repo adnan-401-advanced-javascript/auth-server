@@ -6,7 +6,12 @@ GET /users var payload = {}  return [users]
 POST /signup var payload = { username, password } return user;
 POST /signin var payload = { username, password } return { user, token }
 // test purpose
-POST /secret var payload = { } return { user }
+POST /secret var payload = {} return { user }
+// test crud
+GET /read var payload = {}  return {};
+POST /create var payload = {} return {};
+PUT /update var payload = {} return {}
+DELETE /delete var payload = {} return {}
 ```
 
 ### UML
