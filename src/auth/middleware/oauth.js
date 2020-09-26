@@ -52,8 +52,13 @@ async function getUser(remoteUser) {
     username: remoteUser.login,
     password: "oauthpassword",
   };
-  const newUser = new User(userRecord);
-  const user = await newUser.save(userRecord);
+  // update upsert
+  await User.updateOne(
+    { username: remoteUser.login },
+    { $set: userRecord },
+    { upsert: true }, // If set to true, creates a new document when no document matches the query criteria
+  );
+  const user = new User({ username: remoteUser.login });
   const token = user.generateToken();
   return [user, token];
 }
