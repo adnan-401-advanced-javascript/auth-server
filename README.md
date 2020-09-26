@@ -12,6 +12,9 @@ GET /read var payload = {}  return {};
 POST /create var payload = {} return {};
 PUT /update var payload = {} return {}
 DELETE /delete var payload = {} return {}
+// oauth
+GET / var payload = {} return "index.html"
+GET /oauth var payload = {} return [user, token];
 ```
 
 ### UML
