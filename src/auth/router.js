@@ -2,12 +2,22 @@ const express = require("express");
 
 const router = express.Router();
 
+const path = require("path");
 const basicAuth = require("./middleware/basic");
 const bearerAuth = require("./middleware/bearer");
+const oauth = require("./middleware/oauth");
 
 const permissions = require("./middleware/authorize");
 
 const UserSchema = require("./models/users-model");
+
+router.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../../", "public", "index.html"));
+});
+
+router.get("/oauth", oauth, async (req, res) => {
+  res.status(200).json({ token: req.token, user: req.user });
+});
 
 // ok
 router.get("/read", bearerAuth, permissions("read"), (req, res) => {
