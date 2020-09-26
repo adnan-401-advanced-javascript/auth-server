@@ -3,8 +3,28 @@ const express = require("express");
 const router = express.Router();
 
 const basicAuth = require("./middleware/basic");
+const bearerAuth = require("./middleware/bearer");
+
+const permissions = require("./middleware/authorize");
 
 const UserSchema = require("./models/users-model");
+
+// ok
+router.get("/read", bearerAuth, permissions("read"), (req, res) => {
+  res.status(200).send({ msg: "read working" });
+});
+
+router.post("/create", bearerAuth, permissions("create"), (req, res) => {
+  res.status(200).send({ msg: "add working" });
+});
+
+router.put("/update", bearerAuth, permissions("update"), (req, res) => {
+  res.status(200).send({ msg: "update working" });
+});
+
+router.delete("/delete", bearerAuth, permissions("delete"), (req, res) => {
+  res.status(200).send({ msg: "delete working" });
+});
 
 router.get("/users", async (req, res) => {
   const data = await UserSchema.find({});
@@ -25,7 +45,7 @@ router.post("/signin", basicAuth, async (req, res) => {
   const { user, isValid } = req;
   if (isValid) {
     const authUser = new UserSchema({ username: user.username });
-    const token = await authUser.generateToken();
+    const token = authUser.generateToken();
     res.cookie("token", token, { maxAge: 900000, httpOnly: true });
     res.status(200).send({ user, token });
   } else {

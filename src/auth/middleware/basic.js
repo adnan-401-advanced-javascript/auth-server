@@ -14,9 +14,13 @@ module.exports = async (req, res, next) => {
   // 1st decode auth[1] -> then split it on :
     const [username, password] = base64.decode(auth[1]).split(":");
     const authUser = new User({ username, password });
-    const { isValid, user } = await authUser.authenticateUser();
-    req.isValid = isValid;
-    req.user = user;
-    next();
+    try {
+      const { isValid, user } = await authUser.authenticateUser();
+      req.isValid = isValid;
+      req.user = user;
+      next();
+    } catch (e) {
+      next(e);
+    }
   } else { next("Invalid Login!! "); }
 };

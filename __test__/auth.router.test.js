@@ -10,9 +10,13 @@ const { server } = require("../src/server");
 const mockRequest = supergoose(server);
 
 describe("server.js", () => {
+  it("test users", () => mockRequest
+    .get("/users").then((data) => {
+      expect(data.status).toEqual(200);
+    }));
   it("test signup ", async () => {
     const theUser = {
-      username: "adnan",
+      username: "adnanTest1",
       password: "1234",
     };
     mockRequest
@@ -22,19 +26,25 @@ describe("server.js", () => {
   });
   it("test signin", async () => {
     const userData = {
-      username: "adnan",
+      username: "adnanTest",
       password: "1234",
     };
     await mockRequest.post("/signup").send(userData);
-    const results = await mockRequest.post("/signin").auth("adnan", "1234");
-    const token = jwt.verify(results.body.token, process.env.JWT_SECRET_KEY);
-    expect(token).toBeDefined();
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const decoded = jwt.verify(results.body.token, process.env.JWT_SECRET_KEY);
+    expect(decoded).toBeDefined();
   });
-
-  it("test users", () => mockRequest
-    .get("/users").then((data) => {
-      expect(data.status).toEqual(200);
-    }));
+  it("test failled signin", async () => {
+    try {
+      const userData = {
+        username: "notfound",
+        password: "1234",
+      };
+      await mockRequest.post("/signin").auth(userData.username, userData.password);
+    } catch (e) {
+      expect(e.message).toBe("username/password incorrect");
+    }
+  });
 });
 
 describe("Server error", () => {
@@ -47,4 +57,63 @@ describe("Server error", () => {
     .get("/no-route").then((data) => {
       expect(data.status).toEqual(404);
     }));
+});
+
+describe("test crud as a user", async () => {
+  const userData = {
+    username: "adnanTest",
+    password: "1234",
+  };
+  beforeEach(async () => {
+    await mockRequest.post("/signup").send(userData);
+  });
+
+  it("test inValid Bearer", async () => {
+    const data = await mockRequest.get("/read")
+      .auth("token", {
+        type: "bearer",
+      });
+    expect(data.body.msg).toBe("jwt malformed");
+  });
+  it("test Valid Bearer", async () => {
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const data = await mockRequest.get("/secret")
+      .auth(results.body.token, {
+        type: "bearer",
+      });
+    expect(data.status).toBe(200);
+  });
+
+  it("test read", async () => {
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const data = await mockRequest.get("/read")
+      .auth(results.body.token, {
+        type: "bearer",
+      });
+    expect(data.statusCode).toBe(200);
+  });
+  it("test create", async () => {
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const data = await mockRequest.post("/create")
+      .auth(results.body.token, {
+        type: "bearer",
+      });
+    expect(data.body.msg).toBe("Access Denied!");
+  });
+  it("test update", async () => {
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const data = await mockRequest.put("/update")
+      .auth(results.body.token, {
+        type: "bearer",
+      });
+    expect(data.body.msg).toBe("Access Denied!");
+  });
+  it("test delete", async () => {
+    const results = await mockRequest.post("/signin").auth(userData.username, userData.password);
+    const data = await mockRequest.delete("/delete")
+      .auth(results.body.token, {
+        type: "bearer",
+      });
+    expect(data.body.msg).toBe("Access Denied!");
+  });
 });
